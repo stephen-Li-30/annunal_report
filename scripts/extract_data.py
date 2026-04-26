@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# 先使用akshare进行获取脚本
 
 """
 annual-report-extractor 一键提取脚本
@@ -19,7 +18,6 @@ Author: QClaw
 Date: 2026-04-23
 """
 
-# 一键获取数据文件
 import sys
 import os
 import json

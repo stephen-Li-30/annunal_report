@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """AKShare data fetcher - avoids shell encoding issues by using a script file"""
 import sys
 import json

@@ -260,7 +260,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 使用示例:
-  python generate_analysis_report.py --company=福耀玻璃 --code=600660.SH --year=2025 --input=年报数据.xlsx --output=财报解读.xlsx
+  python scripts/generate_analysis_report.py --company=福耀玻璃 --code=600660.SH --year=2025 --input=年报数据.xlsx --output=财报解读.xlsx
 
 前提条件:
   1. 已生成数据表1（22项年报数据.xlsx）
