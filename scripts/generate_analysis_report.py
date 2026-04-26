@@ -4,8 +4,9 @@
 基于数据表1的22项数据，生成6维度27项分析报告
 
 使用方法:
-  python generate_analysis_report.py --input=年报数据.xlsx --output=财报解读.xlsx
-  python generate_analysis_report.py --help
+  python scripts/generate_analysis_report.py --company=福耀玻璃 --code=600660.SH --year=2025 --input=年报数据.xlsx --output=财报解读.xlsx
+  python scripts/generate_analysis_report.py --company=福耀玻璃 --company-en=Fuyao Glass --code=600660.SH --year=2025 --input=年报数据.xlsx --output=财报解读.xlsx
+  python scripts/generate_analysis_report.py --help
 
 依赖:
   - openpyxl: Excel读写与样式

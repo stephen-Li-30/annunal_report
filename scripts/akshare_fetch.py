@@ -5,7 +5,6 @@ import json
 import argparse
 import traceback
 
-
 REQUIRED_DATASETS = [
     "company_info",
     "financial_abstract",

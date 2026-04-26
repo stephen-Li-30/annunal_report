@@ -6,14 +6,14 @@ annual-report-extractor 一键提取脚本
 全自动化执行年报22项数据提取 → Excel生成 → 验证
 
 使用方法:
-  python extract_data.py --company=福耀玻璃 --code=600660.SH --year=2025
-  python extract_data.py --company=福耀玻璃 --code=600660.SH --year=2025 --output=fuyao.xlsx
-  python extract_data.py --help
+  python scripts/extract_data.py --company=福耀玻璃 --code=600660.SH --year=2025
+  python scripts/extract_data.py --company=福耀玻璃 --code=600660.SH --year=2025 --output=fuyao.xlsx
+  python scripts/extract_data.py --help
 
 依赖:
   - Python: openpyxl, akshare, pandas, requests
   - Node.js: prosearch.cjs（内置于本技能包）
-  - 运行前先执行: python check_env.py 确认环境就绪
+  - 运行前先执行: python scripts/check_env.py 确认环境就绪
 
 Author: QClaw
 Date: 2026-04-23
@@ -941,7 +941,7 @@ def main():
             print(f'  [OK] 财报解读分析表: {analysis_output}')
         except Exception as e:
             print(f'  [WARN] 生成财报解读分析表失败: {e}')
-            print(f'  [提示] 可手动执行: python generate_analysis_report.py --company="{args.company}" --code="{args.code}" --year={args.year} --input="{output_path}" --output="{analysis_output}"')
+            print(f'  [提示] 可手动执行: python scripts/generate_analysis_report.py --company="{args.company}" --code="{args.code}" --year={args.year} --input="{output_path}" --output="{analysis_output}"')
     else:
         print(f'  [SKIP] 分析报告生成器不存在: {analysis_script}')
 

@@ -31,10 +31,9 @@ except ImportError:
 
 
 # =====================================================================
-# 1. 验证规则定义
+# 验证规则
 # =====================================================================
 
-# 数值合理性规则：field_name -> (min, max, unit, description)
 NUMERIC_RULES = {
     '营收': (0, 100000, '亿元', '营业收入'),
     '净利润': (0, 10000, '亿元', '归母净利润'),
@@ -82,7 +81,7 @@ ITEMS_22 = [
 
 
 # =====================================================================
-# 2. 核心验证函数
+# 核心验证函数
 # =====================================================================
 
 def extract_numeric(text):
@@ -129,26 +128,21 @@ def validate_item_value(item_name, value_text):
     """验证单项数据的数值合理性"""
     issues = []
     
-    # 跳过明显空值
     if not value_text or str(value_text).strip() in ['[待填充]', 'N/A', '', '无', '暂无', '待填充']:
         return [], None
     
     for rule_key, (min_val, max_val, unit, desc) in NUMERIC_RULES.items():
         if rule_key in item_name or rule_key in str(value_text):
-            # 提取百分比
             if unit == '%':
                 num = extract_percent(str(value_text))
             else:
                 num = extract_numeric(str(value_text))
             
             if num is not None:
-                # 百分比特殊处理（上限100%）
                 if unit == '%':
                     if not (min_val <= num <= max_val):
                         issues.append(f"{desc}={num}{unit}，超出合理范围[{min_val},{max_val}]{unit}")
-                # 亿/万单位特殊处理
                 else:
-                    # 先还原为原始单位
                     text = str(value_text)
                     if '亿' in text and num > 1e8:
                         raw = num / 1e8
@@ -263,7 +257,7 @@ def run_enhanced_validation(data_rows):
             'warnings': [],
         }
 
-
+# 生成表后进行最后的交付验证函数
 def build_acceptance_summary(filepath, data_rows, filled, empty, all_issues, source_issues, source_stats, enhanced_result):
     """构建可交付验收摘要"""
     file_exists = os.path.exists(filepath)

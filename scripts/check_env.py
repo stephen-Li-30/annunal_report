@@ -4,7 +4,7 @@ annual-report-extractor 环境检查脚本
 一键验证所有依赖是否就绪
 
 使用方法:
-  python check_env.py
+  python scripts/check_env.py
 
 返回:
   0 = 全部就绪
@@ -158,14 +158,14 @@ def main():
         print('  [ALL OK] 所有依赖就绪，可以开始年报数据提取任务')
         print('=' * 60)
         print()
-        print('下一步: python extract_data.py --help')
+        print('下一步: python scripts/extract_data.py --help')
         return 0
     else:
         print('  [ISSUE] 有依赖缺失，请先安装')
         print('=' * 60)
         print()
         print('安装 Python 依赖:')
-        print('  pip install -r requirements.txt')
+        print('  pip install -r scripts/requirements.txt')
         print()
         print('复制 prosearch.cjs:')
         print('  从 online-search 技能目录复制到本目录')
