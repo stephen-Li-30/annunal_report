@@ -264,6 +264,74 @@ def run_enhanced_validation(data_rows):
         }
 
 
+def build_acceptance_summary(filepath, data_rows, filled, empty, all_issues, source_issues, source_stats, enhanced_result):
+    """构建可交付验收摘要"""
+    file_exists = os.path.exists(filepath)
+    row_count_ok = len(data_rows) == 22
+    readable = True
+    try:
+        wb = openpyxl.load_workbook(filepath, data_only=True)
+        wb.close()
+    except Exception:
+        readable = False
+
+    validation_sheet_exists = False
+    try:
+        wb = openpyxl.load_workbook(filepath)
+        validation_sheet_exists = '数据验证' in wb.sheetnames
+        wb.close()
+    except Exception:
+        validation_sheet_exists = False
+
+    unknown_count = source_stats.get('unknown', 0)
+    gap_count = source_stats.get('gap', 0)
+    completeness_rate = len(filled) / 22 * 100 if 22 else 0
+    enhanced_score = enhanced_result.get('overall_score', 0)
+
+    deliverable = all([
+        file_exists,
+        readable,
+        row_count_ok,
+        completeness_rate >= 100,
+        len(all_issues) == 0,
+        len(source_issues) == 0,
+        unknown_count == 0,
+        enhanced_score >= 70,
+    ])
+
+    next_steps = []
+    if not file_exists:
+        next_steps.append('先确认表1文件是否真实落盘')
+    if not readable:
+        next_steps.append('先修复 Excel 文件可读性，再继续验证')
+    if not row_count_ok:
+        next_steps.append('检查表1结构，确认是否完整保留 22 项数据')
+    if empty:
+        next_steps.append(f'补充未填充的 {len(empty)} 项数据')
+    if all_issues:
+        next_steps.append(f'处理 {len(all_issues)} 个数值合理性问题')
+    if source_issues:
+        next_steps.append(f'完善 {len(source_issues)} 项来源标注问题')
+    if unknown_count > 0:
+        next_steps.append('将来源不明项统一改为第1-5级或数据缺口')
+    if gap_count > 0:
+        next_steps.append(f'补充 {gap_count} 项数据缺口说明或继续补数')
+    if enhanced_score < 70:
+        next_steps.append('优先处理五维度验证中的问题，再判断是否可交付')
+    if not next_steps:
+        next_steps.append('当前表1已满足最小验收要求，可继续交付或生成表2联查结果')
+
+    return {
+        'file_exists': file_exists,
+        'readable': readable,
+        'row_count_ok': row_count_ok,
+        'row_count': len(data_rows),
+        'validation_sheet_exists': validation_sheet_exists,
+        'deliverable': deliverable,
+        'next_steps': next_steps,
+    }
+
+
 def validate_excel(filepath):
     """主验证函数"""
     print(f'\n{"="*60}')
@@ -406,6 +474,17 @@ def validate_excel(filepath):
     print()
     
     # ---- 6. 生成摘要 ----
+    acceptance = build_acceptance_summary(
+        filepath=filepath,
+        data_rows=data_rows,
+        filled=filled,
+        empty=empty,
+        all_issues=all_issues,
+        source_issues=source_issues,
+        source_stats=source_stats,
+        enhanced_result=enhanced_result,
+    )
+
     print(f'{"="*60}')
     print(f'  验证摘要')
     print(f'{"="*60}')
@@ -418,8 +497,19 @@ def validate_excel(filepath):
     print(f'  第4级:       {level4}项 | 第5级: {level5}项 | 数据缺口: {gap}项')
     print(f'  来源不明:     {unknown}项')
     print(f'{"="*60}\n')
-    
-    print(f'[SUGGESTIONS] 改进建议:')
+
+    print(f'[ACCEPTANCE] 最小验收摘要:')
+    print(f'  文件存在:     {"PASS" if acceptance["file_exists"] else "FAIL"}')
+    print(f'  文件可回读:   {"PASS" if acceptance["readable"] else "FAIL"}')
+    print(f'  表1结构22项:  {"PASS" if acceptance["row_count_ok"] else "FAIL"}  ({acceptance["row_count"]}项)')
+    print(f'  数据验证Sheet: {"PASS" if acceptance["validation_sheet_exists"] else "WARN"}')
+    print(f'  可继续交付:   {"YES" if acceptance["deliverable"] else "NO"}\n')
+
+    print(f'[NEXT STEPS]')
+    for idx, step in enumerate(acceptance['next_steps'], 1):
+        print(f'  {idx}. {step}')
+
+    print(f'\n[SUGGESTIONS] 改进建议:')
     if completeness_rate < 100:
         print(f'  1. 补充未填充的 {len(empty)} 项数据')
     if known_pct < 100:
@@ -449,6 +539,7 @@ def validate_excel(filepath):
         'gap_count': gap,
         'enhanced': enhanced_result,
         'enhanced_score': enhanced_score,
+        'acceptance': acceptance,
     }
 
 

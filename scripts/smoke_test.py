@@ -26,6 +26,20 @@ def assert_true(condition, message):
         raise AssertionError(message)
 
 
+def print_acceptance_summary(summary):
+    print('[ACCEPTANCE] smoke test summary')
+    print(f"  table1_exists: {'PASS' if summary['table1_exists'] else 'FAIL'}")
+    print(f"  table2_exists: {'PASS' if summary['table2_exists'] else 'FAIL'}")
+    print(f"  report_exists: {'PASS' if summary['report_exists'] else 'FAIL'}")
+    print(f"  table1_22_items: {'PASS' if summary['table1_22_items'] else 'FAIL'} ({summary['table1_item_count']}项)")
+    print(f"  table2_27_items: {'PASS' if summary['table2_27_items'] else 'FAIL'} ({summary['table2_item_count']}项)")
+    print(f"  validation_sheet_exists: {'PASS' if summary['validation_sheet_exists'] else 'FAIL'}")
+    print(f"  can_continue_delivery: {'YES' if summary['can_continue_delivery'] else 'NO'}")
+    print('[NEXT STEPS]')
+    for idx, step in enumerate(summary['next_steps'], 1):
+        print(f'  {idx}. {step}')
+
+
 def main():
     with tempfile.TemporaryDirectory(prefix='annual_report_smoke_') as tmp_dir:
         table1 = os.path.join(tmp_dir, 'smoke_22项数据.xlsx')
@@ -81,7 +95,8 @@ def main():
         assert_true(os.path.exists(report), '验证报告未生成')
 
         wb1 = openpyxl.load_workbook(table1, data_only=True)
-        assert_true('数据验证' in wb1.sheetnames, '数据表1缺少数据验证Sheet')
+        validation_sheet_exists = '数据验证' in wb1.sheetnames
+        assert_true(validation_sheet_exists, '数据表1缺少数据验证Sheet')
         ws1 = wb1[wb1.sheetnames[0]]
         data_rows = [row for row in ws1.iter_rows(min_row=4, max_row=25, values_only=True) if row[0] is not None]
         assert_true(len(data_rows) == 22, f'数据表1应为22项, 实际{len(data_rows)}项')
@@ -93,6 +108,19 @@ def main():
         assert_true(len(analysis_rows) == 27, f'数据表2应为27项, 实际{len(analysis_rows)}项')
         wb2.close()
 
+        acceptance = {
+            'table1_exists': os.path.exists(table1),
+            'table2_exists': os.path.exists(table2),
+            'report_exists': os.path.exists(report),
+            'table1_22_items': len(data_rows) == 22,
+            'table1_item_count': len(data_rows),
+            'table2_27_items': len(analysis_rows) == 27,
+            'table2_item_count': len(analysis_rows),
+            'validation_sheet_exists': validation_sheet_exists,
+            'can_continue_delivery': True,
+            'next_steps': ['烟测通过，可继续使用主流程进行真实数据交付验证'],
+        }
+        print_acceptance_summary(acceptance)
         print('[OK] smoke test passed')
         print(f'  table1: {table1}')
         print(f'  table2: {table2}')
